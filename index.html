@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WGPA Calculator - Faculty of Computing, SLIIT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            dark: '#1a0a2a',
+                            purple: '#7d3cff',
+                            light: '#a66bff'
+                        },
+                        dark: {
+                            bg: '#0f0f15',
+                            card: '#1a1a24'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .excel-like input, .excel-like select {
+            border: 1.5px solid #7d3cff;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            background-color: #252535;
+            color: #f0f0f5;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            box-shadow: 0 2px 8px 0 rgba(80,60,120,0.07);
+        }
+        .excel-like input:focus, .excel-like select:focus {
+            outline: 2px solid #a66bff;
+            outline-offset: 0px;
+            border-color: #a66bff;
+            box-shadow: 0 0 0 2px #a66bff33;
+        }
+        .excel-like table {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 2px 12px 0 rgba(80,60,120,0.10);
+        }
+        .excel-like th, .excel-like td {
+            border-bottom: 1px solid #3a3a4a;
+        }
+        .excel-like th {
+            background: #1a1a24;
+            color: #a66bff;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .excel-like tr:last-child td {
+            border-bottom: none;
+        }
+        .excel-like .remove-row {
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+        .excel-like .remove-row:hover {
+            background: #2d193a;
+        }
+        
+        .grade-A { background-color: rgba(76, 175, 80, 0.2); }
+        .grade-B { background-color: rgba(139, 195, 74, 0.2); }
+        .grade-C { background-color: rgba(255, 193, 7, 0.2); }
+        .grade-D { background-color: rgba(255, 152, 0, 0.2); }
+        .grade-F { background-color: rgba(244, 67, 54, 0.2); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-primary-dark via-primary-purple to-primary-light min-h-screen text-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <div class="flex flex-col lg:flex-row min-h-screen gap-4 h-full">
+            <!-- Left Side - Calculator Form -->
+            <div class="lg:w-1/2 p-4 flex flex-col bg-dark-card rounded-2xl shadow-xl h-full flex-1 min-h-0">
+                <div class="text-center mb-4">
+                    <h1 class="text-primary-light text-3xl font-extrabold mb-1 tracking-tight">WGPA Calculator</h1>
+                    <p class="text-gray-400 text-base">Faculty of Computing, SLIIT</p>
+                </div>
+                <!-- Year Selection -->
+                <div class="mb-4">
+                    <label class="block font-semibold mb-1 text-base">Current Year:</label>
+                    <select id="currentYear" class="w-full bg-gray-800 border border-primary-purple rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-purple text-base transition-all">
+                        <option value="1">Year 1</option>
+                        <option value="2">Year 2</option>
+                        <option value="3">Year 3</option>
+                        <option value="4" selected>Year 4</option>
+                    </select>
+                </div>
+                <!-- Semester Inputs -->
+                <div class="flex-grow overflow-auto space-y-4 min-h-0" id="semesterInputs">
+                    <!-- Year sections will be populated by JavaScript -->
+                    <div class="year-section mb-6" id="year1">
+                        <h5 class="text-primary-light text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i>Year 1
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 1
+                                </h6>
+                                <div id="table-y1s1" class="excel-like"></div>
+                                <div id="semGPA-y1s1" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 2
+                                </h6>
+                                <div id="table-y1s2" class="excel-like"></div>
+                                <div id="semGPA-y1s2" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                        </div>
+                        <div id="yearGPA-y1" class="text-base font-semibold text-primary-purple mt-2"></div>
+                    </div>
+                    <!-- Similar structure for years 2-4 -->
+                    <div class="year-section mb-6" id="year2">
+                        <h5 class="text-primary-light text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i>Year 2
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 1
+                                </h6>
+                                <div id="table-y2s1" class="excel-like"></div>
+                                <div id="semGPA-y2s1" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 2
+                                </h6>
+                                <div id="table-y2s2" class="excel-like"></div>
+                                <div id="semGPA-y2s2" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                        </div>
+                        <div id="yearGPA-y2" class="text-base font-semibold text-primary-purple mt-2"></div>
+                    </div>
+                    <div class="year-section mb-6" id="year3">
+                        <h5 class="text-primary-light text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i>Year 3
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 1
+                                </h6>
+                                <div id="table-y3s1" class="excel-like"></div>
+                                <div id="semGPA-y3s1" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 2
+                                </h6>
+                                <div id="table-y3s2" class="excel-like"></div>
+                                <div id="semGPA-y3s2" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                        </div>
+                        <div id="yearGPA-y3" class="text-base font-semibold text-primary-purple mt-2"></div>
+                    </div>
+                    <div class="year-section mb-6" id="year4">
+                        <h5 class="text-primary-light text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i>Year 4
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 1
+                                </h6>
+                                <div id="table-y4s1" class="excel-like"></div>
+                                <div id="semGPA-y4s1" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                            <div>
+                                <h6 class="font-medium mb-2 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>Semester 2
+                                </h6>
+                                <div id="table-y4s2" class="excel-like"></div>
+                                <div id="semGPA-y4s2" class="text-sm text-primary-light mt-1"></div>
+                            </div>
+                        </div>
+                        <div id="yearGPA-y4" class="text-base font-semibold text-primary-purple mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Calculate Button -->
+                <div class="text-center mt-4">
+                    <button id="calculateBtn" class="bg-primary-purple hover:bg-primary-light text-white font-bold py-3 px-8 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-xl hover:shadow-2xl text-base tracking-wide">
+                        <i class="fas fa-calculator mr-2"></i>Calculate WGPA
+                    </button>
+                </div>
+
+                <!-- Results -->
+                <div id="results" class="mt-4 hidden">
+                    <div class="bg-dark-card rounded-2xl overflow-hidden shadow-2xl border border-primary-purple">
+                        <div class="bg-primary-purple bg-opacity-30 px-4 py-3 border-b border-primary-purple rounded-t-2xl">
+                            <h5 class="font-semibold flex items-center text-lg">
+                                <i class="fas fa-chart-line mr-2"></i>Results
+                            </h5>
+                        </div>
+                        <div class="p-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h6 class="text-gray-400 mb-2 text-base">Year GPAs:</h6>
+                                    <div id="yearGPAs" class="space-y-2"></div>
+                                </div>
+                                <div class="text-center">
+                                    <h6 class="text-gray-400 text-base">Final WGPA:</h6>
+                                    <h3 id="finalWGPA" class="text-3xl font-extrabold my-2">0.00</h3>
+                                    <div id="gpaMeter" class="h-3 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full mt-3 mx-auto shadow" style="width: 80%;"></div>
+                                    <h6 class="text-gray-400 mt-4 text-base">Cumulative GPA (CGPA):</h6>
+                                    <h3 id="finalCGPA" class="text-2xl font-bold my-2">0.00</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Information & Grading Scale -->
+            <div class="lg:w-1/2 p-4 bg-gradient-to-br from-primary-purple via-primary-light to-primary-dark rounded-2xl shadow-xl flex flex-col gap-4 h-full flex-1 min-h-0">
+                <div class="h-full flex flex-col min-h-0">
+                    <div class="text-center mb-4">
+                        <h2 class="text-white text-2xl font-extrabold mb-2 flex items-center justify-center">
+                            <i class="fas fa-laptop-code mr-3"></i>Faculty of Computing
+                        </h2>
+                        <h4 class="text-gray-300 text-base">Sri Lanka Institute of Information Technology</h4>
+                    </div>
+
+                    <!-- Grading Scale -->
+                    <div class="bg-dark-card bg-opacity-90 rounded-2xl overflow-hidden mb-4 shadow-lg">
+                        <div class="bg-primary-purple bg-opacity-30 px-4 py-3 border-b border-primary-purple rounded-t-2xl">
+                            <h5 class="font-semibold flex items-center text-lg">
+                                <i class="fas fa-table mr-2"></i>Grading Scale
+                            </h5>
+                        </div>
+                        <div class="p-4">
+                            <div class="overflow-auto">
+                                <table class="w-full excel-like">
+                                    <thead>
+                                        <tr class="bg-gray-800">
+                                            <th class="px-3 py-2 text-left">Grade</th>
+                                            <th class="px-3 py-2 text-left">Grade Point</th>
+                                            <th class="px-3 py-2 text-left">Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="grade-A"><td class="px-3 py-2">A</td><td class="px-3 py-2">4.00</td><td class="px-3 py-2">≥ 85%</td></tr>
+                                        <tr class="grade-A"><td class="px-3 py-2">A-</td><td class="px-3 py-2">3.67</td><td class="px-3 py-2">80-84%</td></tr>
+                                        <tr class="grade-B"><td class="px-3 py-2">B+</td><td class="px-3 py-2">3.33</td><td class="px-3 py-2">75-79%</td></tr>
+                                        <tr class="grade-B"><td class="px-3 py-2">B</td><td class="px-3 py-2">3.00</td><td class="px-3 py-2">70-74%</td></tr>
+                                        <tr class="grade-B"><td class="px-3 py-2">B-</td><td class="px-3 py-2">2.67</td><td class="px-3 py-2">65-69%</td></tr>
+                                        <tr class="grade-C"><td class="px-3 py-2">C+</td><td class="px-3 py-2">2.33</td><td class="px-3 py-2">60-64%</td></tr>
+                                        <tr class="grade-C"><td class="px-3 py-2">C</td><td class="px-3 py-2">2.00</td><td class="px-3 py-2">55-59%</td></tr>
+                                        <tr class="grade-C"><td class="px-3 py-2">C-</td><td class="px-3 py-2">1.67</td><td class="px-3 py-2">50-54%</td></tr>
+                                        <tr class="grade-D"><td class="px-3 py-2">D</td><td class="px-3 py-2">1.00</td><td class="px-3 py-2">40-49%</td></tr>
+                                        <tr class="grade-F"><td class="px-3 py-2">F/E</td><td class="px-3 py-2">0.00</td><td class="px-3 py-2">&lt; 40%</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Instructions Card -->
+                    <div class="bg-dark-card bg-opacity-90 rounded-2xl overflow-hidden mb-4 shadow-lg">
+                        <div class="bg-primary-purple bg-opacity-30 px-4 py-3 border-b border-primary-purple rounded-t-2xl">
+                            <h5 class="font-semibold flex items-center text-lg">
+                                <i class="fas fa-info-circle mr-2"></i>Instructions
+                            </h5>
+                        </div>
+                        <div class="p-4 text-gray-200 text-sm space-y-2">
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li>Enter your modules for each semester. You can edit module names, credits, and grades.</li>
+                                <li>Use the <b>+ Add Row</b> button to add more modules as needed.</li>
+                                <li>All credits default to 4, but you can change them.</li>
+                                <li>Your data is saved automatically in your browser (local storage).</li>
+                                <li>Change the "Current Year" dropdown to show/hide years.</li>
+                                <li>Click <b>Calculate WGPA</b> to see your Year GPAs, CGPA, and WGPA.</li>
+                                <li>CGPA is the cumulative GPA for all modules entered.</li>
+                                <li>WGPA is calculated using SLIIT FoC official weights.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- WGPA Formula -->
+                    <div class="bg-dark-card bg-opacity-90 rounded-2xl overflow-hidden shadow-lg">
+                        <div class="bg-primary-purple bg-opacity-30 px-4 py-3 border-b border-primary-purple rounded-t-2xl">
+                            <h5 class="font-semibold flex items-center text-lg">
+                                <i class="fas fa-calculator mr-2"></i>WGPA Formula
+                            </h5>
+                        </div>
+                        <div class="p-4">
+                            <p class="mb-3 font-medium">WGPA = (Y1 × 0%) + (Y2 × 20%) + (Y3 × 30%) + (Y4 × 50%)</p>
+                            <div class="progress mb-3 h-3 bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-gray-500" style="width: 0%"></div>
+                                <div class="h-full bg-blue-400" style="width: 20%"></div>
+                                <div class="h-full bg-blue-600" style="width: 30%"></div>
+                                <div class="h-full bg-primary-purple" style="width: 50%"></div>
+                            </div>
+                            <p class="text-sm text-gray-400 flex items-center">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Year 1 has 0% weight as per FoC requirements
+                            </p>
+                        </div>
+                    </div>
+                    <!-- GPA Chart -->
+                    <div class="bg-dark-card bg-opacity-90 rounded-2xl overflow-hidden shadow-lg mt-4 p-4 flex flex-col items-center">
+                        <h5 class="font-semibold flex items-center text-lg mb-2"><i class="fas fa-chart-bar mr-2"></i>GPA Analysis</h5>
+                        <div class="flex flex-col md:flex-row gap-6 w-full justify-center items-center">
+                            <div class="flex-1 min-w-[220px]">
+                                <canvas id="gpaLineChart" width="350" height="220"></canvas>
+                            </div>
+                            <div class="flex-1 min-w-[220px]">
+                                <canvas id="gpaBarChart" width="350" height="220"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentYearSelect = document.getElementById('currentYear');
+            const STORAGE_KEY = 'wgpaTableData';
+
+            function initializeCharts() {
+    const lineCtx = document.getElementById('gpaLineChart').getContext('2d');
+    const barCtx = document.getElementById('gpaBarChart').getContext('2d');
+
+    const labels = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
+    const gpaData = [0, 0, 0, 0]; // default values, will update after calculation
+
+    window.lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'GPA',
+                data: gpaData,
+                fill: false,
+                borderColor: '#7d3cff',
+                backgroundColor: '#a66bff',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, max: 4 }
+            }
+        }
+    });
+
+    window.barChart = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'GPA',
+                data: gpaData,
+                backgroundColor: '#7d3cff'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, max: 4 }
+            }
+        }
+    });
+}
+
+            
+            function updateYearVisibility() {
+                const selectedYear = parseInt(currentYearSelect.value);
+                
+                document.querySelectorAll('.year-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                
+                for (let i = 1; i <= selectedYear; i++) {
+                    const yearSection = document.getElementById(`year${i}`);
+                    if (yearSection) {
+                        yearSection.classList.remove('hidden');
+                        populateSemesterTables(i);
+                    }
+                }
+            }
+
+            function getSavedData() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+                } catch {
+                    return {};
+                }
+            }
+
+            function saveData() {
+                const data = {};
+                for (let year = 1; year <= 4; year++) {
+                    for (let sem = 1; sem <= 2; sem++) {
+                        const tableDiv = document.getElementById(`table-y${year}s${sem}`);
+                        if (!tableDiv) continue;
+                        const rows = Array.from(tableDiv.querySelectorAll('tbody tr'));
+                        data[`y${year}s${sem}`] = rows.map(tr => {
+                            return {
+                                module: tr.querySelector('.module-name')?.value || '',
+                                credits: tr.querySelector('.credits')?.value || '',
+                                grade: tr.querySelector('.grade')?.value || '4.00',
+                            };
+                        });
+                    }
+                }
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+
+            // Generate 5 blank editable rows for each semester
+            function populateSemesterTables(year) {
+                const saved = getSavedData();
+                for (let sem = 1; sem <= 2; sem++) {
+                    const tableDiv = document.getElementById(`table-y${year}s${sem}`);
+                    if (tableDiv) {
+                        let html = '<table class="w-full">';
+                        html += '<thead><tr class="bg-gray-800"><th class="px-3 py-2 text-left">Module</th><th class="px-3 py-2 text-left w-20">Credits</th><th class="px-3 py-2 text-left w-24">Grade</th><th></th></tr></thead><tbody>';
+                        const key = `y${year}s${sem}`;
+                        const rows = (saved[key] && saved[key].length) ? saved[key] : Array(5).fill({});
+                        rows.forEach(row => {
+                            html += rowHTML(row);
+                        });
+                        html += '</tbody></table>';
+                        html += '<button type="button" class="mt-2 bg-primary-purple hover:bg-primary-light text-white font-bold py-1 px-3 rounded text-sm add-row">+ Add Row</button>';
+                        tableDiv.innerHTML = html;
+
+                        // Add event for add row button
+                        tableDiv.querySelector('.add-row').addEventListener('click', function() {
+                            const tbody = tableDiv.querySelector('tbody');
+                            tbody.insertAdjacentHTML('beforeend', rowHTML());
+                            addRowListeners(tableDiv);
+                            saveData();
+                        });
+                        addRowListeners(tableDiv);
+                    }
+                }
+            }
+
+            function rowHTML(row = {}) {
+                return `<tr class="hover:bg-gray-800">
+                    <td class="px-1 py-1"><input type="text" class="module-name" placeholder="Module name" value="${row.module || ''}"></td>
+                    <td class="px-1 py-1"><input type="number" class="credits" value="${row.credits !== undefined && row.credits !== '' ? row.credits : 4}" min="1" max="5"></td>
+                    <td class="px-1 py-1">
+                        <select class="grade">${gradeOptions(row.grade)}</select>
+                    </td>
+                    <td class="px-1 py-1"><button type="button" class="remove-row text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            }
+
+            function gradeOptions(selected) {
+                const grades = [
+                    { val: '4.00', label: 'A' },
+                    { val: '3.67', label: 'A-' },
+                    { val: '3.33', label: 'B+' },
+                    { val: '3.00', label: 'B' },
+                    { val: '2.67', label: 'B-' },
+                    { val: '2.33', label: 'C+' },
+                    { val: '2.00', label: 'C' },
+                    { val: '1.67', label: 'C-' },
+                    { val: '1.00', label: 'D' },
+                    { val: '0.00', label: 'F/E' },
+                ];
+                return grades.map(g => `<option value="${g.val}"${selected == g.val ? ' selected' : ''}>${g.label}</option>`).join('');
+            }
+
+            function addRowListeners(tableDiv) {
+                // Remove row functionality
+                tableDiv.querySelectorAll('.remove-row').forEach(btn => {
+                    btn.onclick = function() {
+                        const tr = btn.closest('tr');
+                        if (tr) tr.remove();
+                        saveData();
+                    };
+                });
+                tableDiv.querySelectorAll('input, select').forEach(el => {
+                    el.onchange = saveData;
+                    el.oninput = saveData;
+                });
+            }
+            
+            function calculateSemesterGPA(year, sem) {
+                const table = document.getElementById(`table-y${year}s${sem}`);
+                let totalPoints = 0, totalCredits = 0;
+                if (table) {
+                    const creditInputs = table.querySelectorAll('.credits');
+                    const gradeSelects = table.querySelectorAll('.grade');
+                    for (let i = 0; i < creditInputs.length; i++) {
+                        const credits = parseFloat(creditInputs[i].value) || 0;
+                        const grade = parseFloat(gradeSelects[i].value) || 0;
+                        totalCredits += credits;
+                        totalPoints += credits * grade;
+                    }
+                }
+                return totalCredits > 0 ? (totalPoints / totalCredits) : 0;
+            }
+
+            function displaySemesterGPA(year, sem) {
+                const gpa = calculateSemesterGPA(year, sem);
+                const gpaDiv = document.getElementById(`semGPA-y${year}s${sem}`);
+                if (gpaDiv) {
+                    gpaDiv.textContent = `Semester GPA: ${gpa.toFixed(2)}`;
+                }
+            }
+
+            function addSemesterGPAListeners(year, sem) {
+                const table = document.getElementById(`table-y${year}s${sem}`);
+                if (table) {
+                    table.querySelectorAll('.credits, .grade').forEach(input => {
+                        input.addEventListener('input', () => displaySemesterGPA(year, sem));
+                    });
+                }
+            }
+
+            // Calculate WGPA when button is clicked
+            document.getElementById('calculateBtn').addEventListener('click', function() {
+                const results = document.getElementById('results');
+                const yearGPAsDiv = document.getElementById('yearGPAs');
+                const finalWGPADiv = document.getElementById('finalWGPA');
+                const finalCGPADiv = document.getElementById('finalCGPA');
+                const gpaMeter = document.getElementById('gpaMeter');
+                
+                let yearGPAs = [];
+                let totalWGPA = 0;
+                let totalCGPA = 0;
+                
+                // Calculate GPA for each visible year
+                document.querySelectorAll('.year-section').forEach(yearSection => {
+                    if (!yearSection.classList.contains('hidden')) {
+                        const year = parseInt(yearSection.id.replace('year', ''));
+                        let yearTotalCredits = 0;
+                        let yearTotalPoints = 0;
+                        
+                        // Calculate for both semesters
+                        for (let sem = 1; sem <= 2; sem++) {
+                            const table = document.getElementById(`table-y${year}s${sem}`);
+                            if (table) {
+                                const creditInputs = table.querySelectorAll('.credits');
+                                const gradeSelects = table.querySelectorAll('.grade');
+                                
+                                for (let i = 0; i < creditInputs.length; i++) {
+                                    const credits = parseFloat(creditInputs[i].value) || 0;
+                                    const grade = parseFloat(gradeSelects[i].value) || 0;
+                                    
+                                    yearTotalCredits += credits;
+                                    yearTotalPoints += credits * grade;
+                                }
+                            }
+                        }
+                        
+                        const yearGPA = yearTotalCredits > 0 ? (yearTotalPoints / yearTotalCredits) : 0;
+                        yearGPAs.push({ year, gpa: yearGPA.toFixed(2) });
+                        totalCGPA += yearGPA * (year === 1 ? 0 : (year === 2 ? 0.2 : (year === 3 ? 0.3 : 0.5)));
+                    }
+                });
+                
+                // Calculate WGPA based on weights
+                if (yearGPAs.length > 0) {
+                    // Year weights: Y1:0%, Y2:20%, Y3:30%, Y4:50%
+                    const weights = [0, 0.2, 0.3, 0.5];
+                    let weightedSum = 0;
+                    let totalWeight = 0;
+                    
+                    yearGPAs.forEach((yearGPA, index) => {
+                        if (weights[yearGPA.year - 1] > 0) {
+                            weightedSum += parseFloat(yearGPA.gpa) * weights[yearGPA.year - 1];
+                            totalWeight += weights[yearGPA.year - 1];
+                        }
+                    });
+                    
+                    const finalWGPA = weightedSum / totalWeight;
+                    
+                    // Display results
+                    let yearGPAsHTML = '';
+                    yearGPAs.forEach(yearGPA => {
+                        yearGPAsHTML += `<p class="flex justify-between"><span>Year ${yearGPA.year}:</span> <span class="font-bold">${yearGPA.gpa}</span></p>`;
+                    });
+                    
+                    yearGPAsDiv.innerHTML = yearGPAsHTML;
+                    finalWGPADiv.textContent = finalWGPA.toFixed(2);
+                    finalWGPADiv.className = `text-3xl font-extrabold my-2 ${getGPAClass(finalWGPA)}`;
+                    finalCGPADiv.textContent = totalCGPA.toFixed(2);
+                    finalCGPADiv.className = `text-2xl font-bold my-2 ${getGPAClass(totalCGPA)}`;
+                    
+                    // Update GPA meter
+                    const percentage = (finalWGPA / 4.0) * 100;
+                    gpaMeter.style.backgroundSize = `${percentage}% 100%`;
+                    
+                    results.classList.remove('hidden');
+                    
+                    // Smooth scroll to results
+                    results.scrollIntoView({ behavior: 'smooth' });
+
+                    // Update the charts
+                    const yearGpaNumbers = yearGPAs.map(y => Number(y.gpa));
+                    window.barChart.data.datasets[0].data = yearGpaNumbers;
+                    window.barChart.update();
+
+                    window.lineChart.data.labels = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
+                    window.lineChart.data.datasets[0].data = yearGpaNumbers;
+                    window.lineChart.update();
+                }
+            });
+            
+            // Helper function to get color class based on GPA
+            function getGPAClass(gpa) {
+                if (gpa >= 3.67) return 'text-green-400'; // Green for A range
+                if (gpa >= 3.00) return 'text-green-300'; // Light green for B range
+                if (gpa >= 2.00) return 'text-yellow-400'; // Yellow for C range
+                if (gpa >= 1.00) return 'text-orange-400'; // Orange for D
+                return 'text-red-400'; // Red for F
+            }
+            
+            // Initialize the calculator
+            currentYearSelect.addEventListener('change', updateYearVisibility);
+            updateYearVisibility();
+            initializeCharts();
+
+            // Call displaySemesterGPA for all semesters after rendering
+            for (let year = 1; year <= 4; year++) {
+                for (let sem = 1; sem <= 2; sem++) {
+                    addSemesterGPAListeners(year, sem);
+                    displaySemesterGPA(year, sem); // Initial display
+                }
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <footer class="w-full text-center py-4 mt-8 text-gray-400 text-sm bg-dark-card bg-opacity-80 rounded-t-2xl shadow-inner">
+        Developed by Venura Jayasingha
+    </footer>
+</body>
+</html>
