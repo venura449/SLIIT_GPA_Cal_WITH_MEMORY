@@ -172,7 +172,7 @@ Feel free to submit issues, feature requests, or pull requests to improve the ca
 
 ## 📞 Support
 
-For questions or support, please contact the development team or refer to the SLIIT Faculty of Computing guidelines.
+For questions or support, please contact the developer or refer to the SLIIT Faculty of Computing guidelines.
 
 ---
 
