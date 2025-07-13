@@ -1,6 +1,7 @@
 # WGPA Calculator - Faculty of Computing, SLIIT
 
-A modern, responsive web application for calculating Weighted Grade Point Average (WGPA) specifically designed for the Faculty of Computing at SLIIT.
+A modern, responsive web application for calculating Weighted Grade Point Average (WGPA) specifically designed for the Faculty of Computing at SLIIT.  
+
 ##🌐 Live Demo
 🚀 Try it now: https://sliit-gpa-cal-with-memory.vercel.app/
 
